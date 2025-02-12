@@ -1,0 +1,68 @@
+buildscript {
+    ext.kotlin_version = '1.7.10'
+    
+    repositories {
+        google()
+        mavenCentral()
+        // maven {
+        //     url = uri('https://api.mapbox.com/downloads/v2/releases/maven')
+        //     authentication {
+        //         basic(BasicAuthentication)
+        //     }
+        //     credentials {
+        //         // More explicit token handling
+        //         username = "mapbox"
+        //         password = project.findProperty('MAPBOX_DOWNLOADS_TOKEN') ?: System.getenv('MAPBOX_DOWNLOADS_TOKEN') ?: ""
+        //     }
+        // }
+    }
+    
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.3.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        // maven {
+        //     url = uri('https://api.mapbox.com/downloads/v2/releases/maven')
+        //     authentication {
+        //         basic(BasicAuthentication)
+        //     }
+        //     credentials {
+        //         // More explicit token handling
+        //         username = "mapbox"
+        //         password = project.findProperty('MAPBOX_DOWNLOADS_TOKEN') ?: System.getenv('MAPBOX_DOWNLOADS_TOKEN') ?: ""
+        //     }
+        // }
+    }
+}
+
+// Make sure Gradle can read properties from local.properties
+def localProperties = new File(rootProject.projectDir, "local.properties")
+def properties = new Properties()
+if (localProperties.exists()) {
+    localProperties.withInputStream { properties.load(it) }
+}
+
+// // Load the token into project properties if it's not already there
+// if (!project.hasProperty('MAPBOX_DOWNLOADS_TOKEN')) {
+//     project.ext.MAPBOX_DOWNLOADS_TOKEN = properties.getProperty('MAPBOX_DOWNLOADS_TOKEN')
+// }
+
+rootProject.buildDir = "../build"
+
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+
+subprojects {
+    project.evaluationDependsOn(":app")
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

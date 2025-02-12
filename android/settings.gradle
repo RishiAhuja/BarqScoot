@@ -1,0 +1,89 @@
+
+// pluginManagement {
+//     def flutterSdkPath = {
+//         def properties = new Properties()
+//         file("local.properties").withInputStream { properties.load(it) }
+//         def flutterSdkPath = properties.getProperty("flutter.sdk")
+//         assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
+//         return flutterSdkPath
+//     }()
+
+//     includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+
+//     repositories {
+//         google()
+//         mavenCentral()
+//         gradlePluginPortal()
+//     }
+// }
+
+// plugins {
+//     id "dev.flutter.flutter-plugin-loader" version "1.0.0"
+//     id "com.android.application" version "8.1.0" apply false
+//     id "org.jetbrains.kotlin.android" version "1.8.22" apply false
+// }
+
+// include ":app"
+
+
+// Plugin Management - this configures how Gradle finds and uses plugins
+pluginManagement {
+    def flutterSdkPath = {
+        def properties = new Properties()
+        file("local.properties").withInputStream { properties.load(it) }
+        def flutterSdkPath = properties.getProperty("flutter.sdk")
+        assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
+        return flutterSdkPath
+    }()
+
+    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        // Add Mapbox repository for plugins
+        maven {
+            url = uri('https://api.mapbox.com/downloads/v2/releases/maven')
+            authentication {
+                basic(BasicAuthentication)
+            }
+            credentials {
+                username = "mapbox"
+                def properties = new Properties()
+                file("local.properties").withInputStream { properties.load(it) }
+                password = properties.getProperty("MAPBOX_DOWNLOADS_TOKEN")
+            }
+        }
+    }
+}
+
+// Plugin declarations
+plugins {
+    id "dev.flutter.flutter-plugin-loader" version "1.0.0"
+    id "com.android.application" version "8.1.0" apply false
+    id "org.jetbrains.kotlin.android" version "1.8.22" apply false
+}
+
+// Project includes
+include ":app"
+
+// Include Mapbox override module
+include ":mapbox_override"
+project(":mapbox_override").projectDir = new File(rootProject.projectDir, "mapbox_override")
+
+// Load Flutter configurations
+def flutterProjectRoot = rootProject.projectDir.parentFile.toPath()
+def plugins = new Properties()
+def flutterPropertiesFile = new File(flutterProjectRoot.toFile(), ".flutter-plugins")
+if (flutterPropertiesFile.exists()) {
+    flutterPropertiesFile.withReader("UTF-8") { reader -> plugins.load(reader) }
+}
+
+plugins.each { name, path ->
+    def pluginDirectory = flutterProjectRoot.resolve(path).resolve('android').toFile()
+    if (pluginDirectory.exists()) {
+        include ":$name"
+        project(":$name").projectDir = pluginDirectory
+    }
+}

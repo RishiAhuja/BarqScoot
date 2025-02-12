@@ -1,0 +1,65 @@
+name: escooter
+description: "A new Flutter project."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # UI and Navigation
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.1.0
+  go_router: ^13.2.0
+
+  # State Management
+  flutter_riverpod: ^2.4.10
+  riverpod_annotation: ^2.3.4
+
+  # Data Persistence
+  shared_preferences: ^2.2.2
+  hive:
+  hive_flutter:
+
+  # Phone Number and Authentication
+  intl: ^0.19.0
+  intl_phone_number_input: ^0.7.4
+  pinput: ^3.0.1
+
+  # Maps and Location
+  # mapbox_gl: ^0.16.0
+  geolocator: ^10.1.0
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  flutter_map_marker_cluster: ^1.3.0
+
+  # Scanner
+  mobile_scanner: ^3.5.6
+
+  flutter_dotenv:
+  http:
+
+  # Dependency Injections
+  freezed_annotation: ^2.4.1
+  injectable: ^2.3.2
+  get_it: ^7.6.7
+  dartz:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  riverpod_generator: ^2.0.0
+  build_runner: ^2.4.8
+  injectable_generator:
+  hive_generator: ^2.0.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env

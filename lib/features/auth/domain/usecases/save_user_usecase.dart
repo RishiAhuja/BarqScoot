@@ -12,9 +12,15 @@ class SaveUserParams {
   final DateTime dateOfBirth;
   final String gender;
   final bool isVerified;
+  final String email;
+  final String? location;
+  final double walletBalance;
 
   SaveUserParams({
     required this.id,
+    required this.walletBalance,
+    required this.email,
+    this.location,
     required this.token,
     required this.phoneNumber,
     required this.firstName,

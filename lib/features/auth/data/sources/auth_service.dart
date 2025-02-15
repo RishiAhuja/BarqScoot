@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:dartz/dartz.dart';
+import 'package:escooter/core/configs/services/api/base_api.dart';
 import 'package:escooter/core/configs/services/api/base_api_config.dart';
 import 'package:escooter/core/error/api_exceptions.dart';
 import 'package:escooter/features/auth/domain/entities/create_user_request.dart';
+import 'package:escooter/features/auth/domain/entities/login_request.dart';
 import 'package:escooter/utils/logger.dart';
 import 'package:http/http.dart' as http;
 import 'package:injectable/injectable.dart';
@@ -92,6 +94,44 @@ class AuthApiService {
       return Left(ApiException.fromResponse(response));
     } catch (e) {
       return Left(ApiException.fromError(e));
+    }
+  }
+
+  Future<Map<String, dynamic>> login(LoginRequest request) async {
+    try {
+      final response = await _client.post(
+        Uri.parse('${BaseApi.baseUrl}/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(request.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+
+      throw ApiException.fromResponse(response);
+    } catch (e) {
+      throw ApiException('Failed to login: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> getUserProfile(String token) async {
+    try {
+      final response = await _client.get(
+        Uri.parse('${BaseApi.baseUrl}/profile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+
+      throw ApiException.fromResponse(response);
+    } catch (e) {
+      throw ApiException('Failed to get user profile: $e');
     }
   }
 }

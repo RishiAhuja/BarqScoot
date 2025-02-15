@@ -2,6 +2,8 @@
 import 'package:escooter/common/router/app_router.dart';
 import 'package:escooter/core/di/service_locator/service_locator.dart';
 import 'package:escooter/features/auth/domain/entities/create_user_request.dart';
+import 'package:escooter/features/auth/domain/entities/login_request.dart';
+import 'package:escooter/features/auth/domain/usecases/login_usecase.dart';
 import 'package:escooter/features/auth/domain/usecases/register_user_usecase.dart';
 import 'package:escooter/features/auth/domain/usecases/save_user_usecase.dart';
 import 'package:escooter/features/auth/domain/usecases/sent_otp_usecase.dart';
@@ -23,12 +25,14 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   final RegisterUserUsecase _registerUserUsecase;
   final VerifyOtpUsecase _verifyOtpUsecase;
   final SaveUserUseCase _saveUserUsecase;
+  final LoginUseCase _loginUseCase;
 
   AuthController(
     this._sendOtpUseCase,
     this._registerUserUsecase,
     this._verifyOtpUsecase,
     this._saveUserUsecase,
+    this._loginUseCase,
   ) : super(const AsyncValue.data(null));
 
   Future<void> sendOTP(String phoneNumber, BuildContext context) async {
@@ -141,6 +145,8 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
               dateOfBirth: registrationData.dateOfBirth,
               gender: registrationData.gender,
               isVerified: success.user.isVerified,
+              walletBalance: 0,
+              email: registrationData.email,
             ),
           );
 
@@ -161,6 +167,40 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       );
     } catch (e, stackTrace) {
       AppLogger.error('Unexpected error during OTP verification: $e');
+      state = AsyncValue.error(e, stackTrace);
+    }
+  }
+
+  Future<void> login({
+    required String email,
+    required String password,
+    required BuildContext context,
+  }) async {
+    state = const AsyncValue.loading();
+
+    try {
+      final result = await _loginUseCase(
+        params: LoginRequest(
+          email: email,
+          password: password,
+        ),
+      );
+
+      result.fold(
+        (failure) {
+          AppLogger.error('Login failed: $failure');
+          state = AsyncValue.error(failure, StackTrace.current);
+        },
+        (_) {
+          AppLogger.log('Login successful');
+          state = const AsyncValue.data(null);
+          if (context.mounted) {
+            context.authenticateAndRedirect();
+          }
+        },
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error('Unexpected error during login: $e');
       state = AsyncValue.error(e, stackTrace);
     }
   }

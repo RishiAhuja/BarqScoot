@@ -6,12 +6,12 @@ part of 'scooter_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$scootersNotifierHash() => r'8fc360a305434061a9ed10f0f2641b412da234f1';
+String _$scootersNotifierHash() => r'56ea4fd1561b47199110a6b94b722b0a991a9e5d';
 
 /// See also [ScootersNotifier].
 @ProviderFor(ScootersNotifier)
 final scootersNotifierProvider =
-    AutoDisposeAsyncNotifierProvider<ScootersNotifier, List<Scooter>>.internal(
+    AsyncNotifierProvider<ScootersNotifier, List<Scooter>>.internal(
   ScootersNotifier.new,
   name: r'scootersNotifierProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -21,6 +21,6 @@ final scootersNotifierProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$ScootersNotifier = AutoDisposeAsyncNotifier<List<Scooter>>;
+typedef _$ScootersNotifier = AsyncNotifier<List<Scooter>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

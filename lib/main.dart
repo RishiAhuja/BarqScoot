@@ -7,7 +7,6 @@ import 'package:escooter/features/theme/presentation/providers/theme_provider.da
 import 'package:escooter/l10n/app_localizations.dart';
 import 'package:escooter/utils/logger.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,6 +18,7 @@ void main() async {
     await storageService.initHive();
     await AppRouter.authNotifier.initializeAuth();
 
+    AppLogger.log('====================================');
     AppLogger.log('Dependencies configured successfully');
   } catch (e) {
     AppLogger.error('Failed to configure dependencies: $e');

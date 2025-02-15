@@ -1,3 +1,6 @@
+import 'package:escooter/common/router/app_router.dart';
+import 'package:escooter/features/rides/domain/usecases/start_ride_usecase.dart';
+import 'package:escooter/features/scanner/presentation/provider/start_ride_provider.dart';
 import 'package:escooter/features/scanner/presentation/widget/manual_entry_form.dart';
 import 'package:escooter/features/scanner/presentation/widget/scanner_controls.dart';
 import 'package:escooter/features/scanner/presentation/widget/screen_overlay.dart';
@@ -43,10 +46,54 @@ class _QRScannerScreenState extends ConsumerState<QRScannerScreen> {
     }
   }
 
-  void _handleScannedCode(String code) {
-    AppLogger.log('Barcode found! $code');
+  void _handleScannedCode(String code) async {
+    try {
+      AppLogger.log('Scooter ID found: $code');
 
-    // Navigate to scooter details or show error
+      // Pause scanner while processing
+      _scannerController.stop();
+
+      final result = await ref.read(startRideUseCaseProvider)(
+        params: StartRideParams(scooterId: code),
+      );
+
+      if (!mounted) return;
+
+      result.fold(
+        (failure) {
+          AppLogger.error('Failed to start ride: ${failure.message}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(failure.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+              action: SnackBarAction(
+                label: 'Retry',
+                textColor: Colors.white,
+                onPressed: () => _handleScannedCode(code),
+              ),
+            ),
+          );
+        },
+        (_) {
+          AppLogger.log('Ride started successfully');
+          context.push(AppPaths.activeRide);
+        },
+      );
+    } catch (e) {
+      AppLogger.error('Error processing QR code: $e');
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to process QR code: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      // Resume scanner
+      if (mounted) _scannerController.start();
+    }
   }
 
   void _showManualEntryForm() {
@@ -58,7 +105,7 @@ class _QRScannerScreenState extends ConsumerState<QRScannerScreen> {
         child: ManualEntryForm(
           onClose: () => context.pop(context),
           onSubmit: (code) {
-            Navigator.pop(context);
+            context.pop(context);
             _handleScannedCode(code);
           },
         ),
@@ -74,7 +121,7 @@ class _QRScannerScreenState extends ConsumerState<QRScannerScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.push(AppPaths.home),
         ),
       ),
       backgroundColor: Colors.black,

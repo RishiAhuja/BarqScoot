@@ -6,14 +6,15 @@ class UserRegistrationState {
   final DateTime dateOfBirth;
   final String gender;
   final String phoneNumber;
+  final String email;
 
-  UserRegistrationState({
-    required this.firstName,
-    required this.lastName,
-    required this.dateOfBirth,
-    required this.gender,
-    required this.phoneNumber,
-  });
+  UserRegistrationState(
+      {required this.firstName,
+      required this.lastName,
+      required this.dateOfBirth,
+      required this.gender,
+      required this.phoneNumber,
+      required this.email});
 
   UserRegistrationState copyWith({
     String? firstName,
@@ -28,6 +29,7 @@ class UserRegistrationState {
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
       gender: gender ?? this.gender,
       phoneNumber: phoneNumber ?? this.phoneNumber,
+      email: email,
     );
   }
 }

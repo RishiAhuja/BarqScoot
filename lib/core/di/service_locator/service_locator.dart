@@ -4,7 +4,6 @@ import 'package:escooter/features/auth/data/sources/auth_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
-// import 'package:http/http.dart' as http;
 import 'package:injectable/injectable.dart';
 
 final getIt = GetIt.instance;
@@ -17,11 +16,9 @@ final getIt = GetIt.instance;
 Future<void> configureDependencies() async {
   await dotenv.load(fileName: ".env");
 
-  await getIt.init();
+  getIt.init();
   assert(getIt.isRegistered<http.Client>(instanceName: 'httpClient'));
   assert(getIt.isRegistered<AuthApiService>(instanceName: 'authApiService'));
-
-  // Any async dependencies
   await _initializeAsyncDependencies();
 }
 

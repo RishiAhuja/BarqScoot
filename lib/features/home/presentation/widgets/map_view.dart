@@ -19,43 +19,121 @@ class _MapViewState extends ConsumerState<MapView> {
 
   @override
   Widget build(BuildContext context) {
-    final locationAsync = ref.watch(locationNotifierProvider);
+    final locationAsync = ref.watch(userLocationProvider);
     final scootersAsync = ref.watch(scootersNotifierProvider);
 
     return locationAsync.when(
       data: (location) {
         final userLatLng = LatLng(location.latitude, location.longitude);
-
-        // Create user location marker
         final userMarker = Marker(
           point: userLatLng,
           width: 40,
           height: 40,
           child: Icon(
             Icons.location_on,
-            color: Colors.blue,
+            color: Colors.teal[700],
             size: 40,
           ),
         );
-
-        // Update scooter markers when scooter data changes
         scootersAsync.whenData((scooters) {
-          scooterMarkers = scooters
-              .map((scooter) => Marker(
-                    child: Tooltip(
-                      message: 'Battery: ${scooter.batteryLevel}%',
-                      child: const Icon(
-                        Icons.electric_scooter,
-                        color: Colors.green,
-                        size: 30,
+          scooterMarkers = scooters.map((scooter) {
+            final scooterLatLng = LatLng(scooter.latitude, scooter.longitude);
+
+            return Marker(
+              point: scooterLatLng,
+              width: 40, // Increased size
+              height: 40,
+              child: GestureDetector(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            scooter.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.battery_charging_full,
+                                color: _getBatteryColor(scooter.batteryLevel),
+                                size: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              Text('${scooter.batteryLevel}%'),
+                              const SizedBox(width: 16),
+                              Icon(
+                                scooter.status == 'available'
+                                    ? Icons.check_circle
+                                    : Icons.cancel,
+                                color: scooter.status == 'available'
+                                    ? Colors.green
+                                    : Colors.red,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(scooter.status),
+                            ],
+                          ),
+                        ],
+                      ),
+                      backgroundColor: Colors.black87,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      margin: const EdgeInsets.all(16),
+                      duration: const Duration(seconds: 3),
+                      action: SnackBarAction(
+                        label: 'SCAN',
+                        onPressed: () {
+                          // Navigate to scanner with scooter id
+                          // context.push('/scanner/${scooter.id}');
+                        },
+                        textColor: Colors.orangeAccent,
                       ),
                     ),
-                    point: LatLng(scooter.lat, scooter.lng),
-                    width: 30,
-                    height: 30,
-                    // builder: (context) =>
-                  ))
-              .toList();
+                  );
+                },
+                child: Stack(
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      color: Colors.orange[700],
+                      size: 40, // Increased size
+                      shadows: const [
+                        Shadow(
+                          offset: Offset(0, 2),
+                          blurRadius: 4,
+                          color: Colors.black26,
+                        ),
+                      ],
+                    ),
+                    Positioned.fill(
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Icon(
+                            Icons.electric_scooter,
+                            color: Colors.white,
+                            size: 20, // Increased size
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList();
         });
 
         return FlutterMap(
@@ -72,7 +150,7 @@ class _MapViewState extends ConsumerState<MapView> {
               userAgentPackageName: 'com.example.escooter',
             ),
             MarkerLayer(
-              markers: [userMarker], // User location marker
+              markers: [userMarker, ...scooterMarkers], // Combined markers
             ),
             MarkerClusterLayerWidget(
               options: MarkerClusterLayerOptions(
@@ -85,12 +163,16 @@ class _MapViewState extends ConsumerState<MapView> {
                 builder: (context, markers) {
                   return Container(
                     decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.blue),
+                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.orange[700],
+                    ),
                     child: Center(
                       child: Text(
                         markers.length.toString(),
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   );
@@ -104,7 +186,9 @@ class _MapViewState extends ConsumerState<MapView> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(),
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+            ),
             SizedBox(height: 16),
             Text('Loading map...'),
           ],
@@ -119,7 +203,7 @@ class _MapViewState extends ConsumerState<MapView> {
             Text('Error loading map: ${error.toString()}'),
             SizedBox(height: 8),
             ElevatedButton(
-              onPressed: () => ref.refresh(locationNotifierProvider),
+              onPressed: () => ref.refresh(userLocationProvider),
               child: Text('Retry'),
             ),
           ],
@@ -132,5 +216,12 @@ class _MapViewState extends ConsumerState<MapView> {
   void dispose() {
     mapController.dispose();
     super.dispose();
+  }
+
+  // Add this helper method to the class
+  Color _getBatteryColor(int level) {
+    if (level > 70) return Colors.green;
+    if (level > 30) return Colors.orange;
+    return Colors.red;
   }
 }

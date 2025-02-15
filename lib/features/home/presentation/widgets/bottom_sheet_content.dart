@@ -1,10 +1,13 @@
 import 'package:escooter/core/configs/theme/app_colors.dart';
+import 'package:escooter/features/home/domain/entity/scooter/scooter.dart';
 import 'package:escooter/features/home/presentation/provider/scooter_provider.dart';
 import 'package:escooter/features/theme/presentation/providers/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../provider/user_stats_provider.dart';
+import '../provider/location_provider.dart';
 
 class BottomSheetContent extends ConsumerWidget {
   const BottomSheetContent({super.key});
@@ -15,6 +18,7 @@ class BottomSheetContent extends ConsumerWidget {
     final scootersAsync = ref.watch(scootersNotifierProvider);
     final isDarkMode = ref.watch(themeProvider).isDark;
     final theme = Theme.of(context);
+    final locationAsync = ref.watch(userLocationProvider);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.3,
@@ -53,7 +57,7 @@ class BottomSheetContent extends ConsumerWidget {
                     ),
                     _StatItem(
                       title: 'Balance',
-                      value: '﷼${stats.balance}',
+                      value: '﷼${stats.walletBalance}',
                       icon: Icons.account_balance_wallet,
                       isDark: isDarkMode,
                     ),
@@ -85,22 +89,37 @@ class BottomSheetContent extends ConsumerWidget {
                     color: isDarkMode ? Colors.white70 : Colors.black54,
                   ),
                   title: Text(
-                    'Scooter ${scooters[index].id}',
+                    scooters[index].name,
                     style: TextStyle(
                       color: isDarkMode ? Colors.white : Colors.black87,
                     ),
                   ),
-                  subtitle: Text(
-                    '${scooters[index].distance}km away',
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                  subtitle: locationAsync.when(
+                    data: (position) => Text(
+                      '${_calculateDistance(position, scooters[index])}km away',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
                     ),
+                    loading: () => const Text('Calculating distance...'),
+                    error: (_, __) => const Text('Unable to get distance'),
                   ),
-                  trailing: Text(
-                    '${scooters[index].batteryLevel}%',
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black87,
-                    ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.battery_charging_full,
+                        color: _getBatteryColor(scooters[index].batteryLevel),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${scooters[index].batteryLevel}%',
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -111,6 +130,25 @@ class BottomSheetContent extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Color _getBatteryColor(int level) {
+    if (level > 70) return Colors.green;
+    if (level > 30) return Colors.orange;
+    return Colors.red;
+  }
+
+  String _calculateDistance(Position? userPosition, Scooter scooter) {
+    if (userPosition == null) return 'N/A';
+
+    final distanceInMeters = Geolocator.distanceBetween(
+      userPosition.latitude,
+      userPosition.longitude,
+      scooter.latitude,
+      scooter.longitude,
+    );
+
+    return (distanceInMeters / 1000).toStringAsFixed(1);
   }
 }
 

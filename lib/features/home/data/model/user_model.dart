@@ -28,6 +28,18 @@ class UserModel extends HiveObject {
   @HiveField(7)
   final bool isVerified;
 
+  @HiveField(8)
+  final String email;
+
+  @HiveField(9)
+  final String? location;
+
+  @HiveField(10)
+  final double walletBalance;
+
+  @HiveField(11)
+  final DateTime createdAt;
+
   UserModel({
     required this.id,
     required this.token,
@@ -37,5 +49,26 @@ class UserModel extends HiveObject {
     required this.dateOfBirth,
     required this.gender,
     required this.isVerified,
+    required this.email,
+    this.location,
+    required this.walletBalance,
+    required this.createdAt,
   });
+
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['id'],
+      token: json['token'] ?? '',
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      email: json['email'],
+      phoneNumber: json['phoneNumber'],
+      dateOfBirth: DateTime.parse(json['dateOfBirth']),
+      gender: json['gender'],
+      location: json['location'],
+      walletBalance: (json['walletBalance'] as num).toDouble(),
+      isVerified: json['isVerified'],
+      createdAt: DateTime.parse(json['createdAt']),
+    );
+  }
 }

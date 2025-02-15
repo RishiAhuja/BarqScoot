@@ -25,8 +25,15 @@ class RideHistoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       color: isDarkMode ? Colors.grey[850] : Colors.white,
-      elevation: 2,
+      elevation: 0,
       margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!,
+          width: 1,
+        ),
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),

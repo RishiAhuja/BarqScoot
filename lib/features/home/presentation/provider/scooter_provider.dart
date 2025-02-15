@@ -1,39 +1,31 @@
+import 'package:escooter/core/di/service_locator/service_locator.dart';
 import 'package:escooter/features/home/domain/entity/scooter/scooter.dart';
+import 'package:escooter/features/home/domain/repository/scooter_repository.dart';
+import 'package:escooter/utils/logger.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'scooter_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class ScootersNotifier extends _$ScootersNotifier {
   @override
-  Future<List<Scooter>> build() async {
-    // Initial load of scooters
-    return _fetchScooters();
+  FutureOr<List<Scooter>> build() async {
+    return _loadScooters();
   }
 
-  Future<List<Scooter>> _fetchScooters() async {
-    // In a real app, this would be an API call
-    return [
-      Scooter(
-          id: '1',
-          lat: 24.7136,
-          lng: 46.6753,
-          batteryLevel: 85,
-          distance: 0.5,
-          status: 'Available'),
-      // More scooters...
-    ];
+  Future<List<Scooter>> _loadScooters() async {
+    final result = await getIt<ScooterRepository>().getScooters();
+    return result.fold(
+      (failure) {
+        AppLogger.error(failure);
+        throw Exception(failure);
+      },
+      (scooters) => scooters,
+    );
   }
 
-  Future<void> filterByBattery(int minBattery) async {
+  Future<void> refresh() async {
     state = const AsyncValue.loading();
-    try {
-      final scooters = await _fetchScooters();
-      final filtered =
-          scooters.where((s) => s.batteryLevel >= minBattery).toList();
-      state = AsyncValue.data(filtered);
-    } catch (error, stackTrace) {
-      state = AsyncValue.error(error, stackTrace);
-    }
+    state = await AsyncValue.guard(() => _loadScooters());
   }
 }

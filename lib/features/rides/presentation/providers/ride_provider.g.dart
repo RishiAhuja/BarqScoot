@@ -1,25 +1,25 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'location_provider.dart';
+part of 'ride_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$userLocationHash() => r'47d2d0fc3ebc97f03f8312a16bf123ce87684bab';
+String _$ridesHash() => r'6f2db7545c9a36320d4a0acdc520203775afd70d';
 
-/// See also [UserLocation].
-@ProviderFor(UserLocation)
-final userLocationProvider =
-    AutoDisposeAsyncNotifierProvider<UserLocation, Position>.internal(
-  UserLocation.new,
-  name: r'userLocationProvider',
+/// See also [Rides].
+@ProviderFor(Rides)
+final ridesProvider =
+    AutoDisposeAsyncNotifierProvider<Rides, List<Ride>>.internal(
+  Rides.new,
+  name: r'ridesProvider',
   debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$userLocationHash,
+      const bool.fromEnvironment('dart.vm.product') ? null : _$ridesHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$UserLocation = AutoDisposeAsyncNotifier<Position>;
+typedef _$Rides = AutoDisposeAsyncNotifier<List<Ride>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

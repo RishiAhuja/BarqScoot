@@ -31,6 +31,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
+  final TextEditingController _loginEmailController = TextEditingController();
+  final TextEditingController _loginPasswordController =
+      TextEditingController();
   String _selectedGender = 'Male'; // Default value
   DateTime? _selectedDate;
   final List<String> _genders = ['Male', 'Female', 'Other'];
@@ -62,11 +65,40 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   @override
   void dispose() {
     _animationController.dispose();
+    _loginEmailController.dispose();
+    _loginPasswordController.dispose();
     super.dispose();
   }
 
   Widget _buildLoginForm() {
-    return _phoneNumberTextField();
+    return Column(
+      children: [
+        _buildTextField(
+          controller: _loginEmailController,
+          labelText: 'Email',
+          prefixIcon: Icons.email_outlined,
+          keyboardType: TextInputType.emailAddress,
+          validator: (value) {
+            if (value?.isEmpty ?? true) return 'Please enter your email';
+            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
+              return 'Please enter a valid email';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 20),
+        _buildTextField(
+          controller: _loginPasswordController,
+          labelText: 'Password',
+          prefixIcon: Icons.lock_outline,
+          obscure: true,
+          validator: (value) {
+            if (value?.isEmpty ?? true) return 'Please enter your password';
+            return null;
+          },
+        ),
+      ],
+    );
   }
 
   Widget _buildRegisterForm() {
@@ -192,6 +224,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: InternationalPhoneNumberInput(
+          textStyle: Theme.of(context).textTheme.bodyMedium,
           onInputChanged: (PhoneNumber number) {
             _phoneNumber = number.phoneNumber ?? '';
           },
@@ -202,6 +235,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           formatInput: true,
           keyboardType: TextInputType.phone,
           inputDecoration: InputDecoration(
+            labelStyle: Theme.of(context).textTheme.bodyMedium,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide(color: Colors.grey[300]!),
@@ -311,45 +345,58 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
-    if (!_acceptedTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please accept the Terms & Conditions'),
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          backgroundColor: Colors.red[400],
-          margin: const EdgeInsets.all(20),
-        ),
+
+    final authMode = ref.read(authModeProvider);
+
+    if (authMode == AuthMode.login) {
+      // Handle login
+      await ref.read(authControllerProvider.notifier).login(
+            email: _loginEmailController.text,
+            password: _loginPasswordController.text,
+            context: context,
+          );
+    } else {
+      if (!_acceptedTerms) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Please accept the Terms & Conditions'),
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            backgroundColor: Colors.red[400],
+            margin: const EdgeInsets.all(20),
+          ),
+        );
+        return;
+      }
+
+      final registrationData = UserRegistrationState(
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
+        dateOfBirth: _selectedDate!,
+        gender: _selectedGender,
+        phoneNumber: _phoneNumber,
+        email: _emailController.text,
       );
-      return;
+      AppLogger.log('Registration data: $registrationData');
+
+      ref
+          .read(userRegistrationProvider.notifier)
+          .saveRegistrationData(registrationData);
+
+      await ref.read(authControllerProvider.notifier).registerUser(
+          createUserRequest: CreateUserRequest(
+              firstName: _firstNameController.text,
+              lastName: _lastNameController.text,
+              email: _emailController.text,
+              phoneNumber: _phoneNumber,
+              password: _passwordController.text,
+              dateOfBirth: DateTime.utc(_selectedDate!.year,
+                  _selectedDate!.month, _selectedDate!.day),
+              gender: _selectedGender),
+          context: context,
+          useBackdoor: false);
     }
-
-    final registrationData = UserRegistrationState(
-      firstName: _firstNameController.text,
-      lastName: _lastNameController.text,
-      dateOfBirth: _selectedDate!,
-      gender: _selectedGender,
-      phoneNumber: _phoneNumber,
-    );
-    AppLogger.log('Registration data: $registrationData');
-
-    ref
-        .read(userRegistrationProvider.notifier)
-        .saveRegistrationData(registrationData);
-
-    await ref.read(authControllerProvider.notifier).registerUser(
-        createUserRequest: CreateUserRequest(
-            firstName: _firstNameController.text,
-            lastName: _lastNameController.text,
-            email: _emailController.text,
-            phoneNumber: _phoneNumber,
-            password: _passwordController.text,
-            dateOfBirth: DateTime.utc(
-                _selectedDate!.year, _selectedDate!.month, _selectedDate!.day),
-            gender: _selectedGender),
-        context: context,
-        useBackdoor: false);
   }
 
   @override

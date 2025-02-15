@@ -1,9 +1,11 @@
 import 'package:dartz/dartz.dart';
 import 'package:escooter/core/configs/services/storage/storage_service.dart';
 import 'package:escooter/core/error/api_exceptions.dart';
+import 'package:escooter/features/auth/data/models/login_reponse.dart';
 import 'package:escooter/features/auth/data/models/otp_response.dart';
 import 'package:escooter/features/auth/data/sources/auth_service.dart';
 import 'package:escooter/features/auth/domain/entities/create_user_request.dart';
+import 'package:escooter/features/auth/domain/entities/login_request.dart';
 import 'package:escooter/features/auth/domain/entities/verify_otp_response.dart';
 import 'package:escooter/features/auth/domain/repository/auth_repository.dart';
 import 'package:escooter/features/auth/domain/usecases/save_user_usecase.dart';
@@ -122,6 +124,9 @@ class AuthRepositoryImpl implements AuthRepository {
         dateOfBirth: params.dateOfBirth,
         gender: params.gender,
         isVerified: params.isVerified,
+        email: params.email,
+        walletBalance: params.walletBalance,
+        createdAt: DateTime.now(),
       );
 
       await _storageService.saveUser(user);
@@ -130,6 +135,31 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       AppLogger.error('Error saving user data: $e');
       return Left(AuthException('Failed to save user data'));
+    }
+  }
+
+  @override
+  Future<Either<String, LoginResponse>> login(LoginRequest request) async {
+    try {
+      final result = await _authApiService.login(request);
+      return Right(LoginResponse.fromJson(result));
+    } on ApiException catch (e) {
+      return Left(e.message);
+    } catch (e) {
+      return Left('Unexpected error during login: $e');
+    }
+  }
+
+  @override
+  Future<Either<String, UserModel>> getUserProfile(String token) async {
+    try {
+      final result = await _authApiService.getUserProfile(token);
+      final userData = result['data'];
+      return Right(UserModel.fromJson(userData));
+    } on ApiException catch (e) {
+      return Left(e.message);
+    } catch (e) {
+      return Left('Failed to get user profile: $e');
     }
   }
 }

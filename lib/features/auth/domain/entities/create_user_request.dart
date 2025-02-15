@@ -6,14 +6,17 @@ class CreateUserRequest {
   final String password;
   final DateTime dateOfBirth;
   final String gender;
-  CreateUserRequest(
-      {required this.firstName,
-      required this.lastName,
-      required this.email,
-      required this.phoneNumber,
-      required this.password,
-      required this.dateOfBirth,
-      required this.gender});
+
+  CreateUserRequest({
+    required this.firstName,
+    required this.lastName,
+    required this.email,
+    required this.phoneNumber,
+    required this.password,
+    required this.dateOfBirth,
+    required this.gender,
+  });
+
   Map<String, dynamic> toJson() => {
         'firstName': firstName,
         'lastName': lastName,

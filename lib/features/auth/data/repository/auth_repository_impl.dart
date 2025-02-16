@@ -142,7 +142,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<String, LoginResponse>> login(LoginRequest request) async {
     try {
       final result = await _authApiService.login(request);
-      return Right(LoginResponse.fromJson(result));
+      return Right(result);
     } on ApiException catch (e) {
       return Left(e.message);
     } catch (e) {
@@ -154,8 +154,13 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<String, UserModel>> getUserProfile(String token) async {
     try {
       final result = await _authApiService.getUserProfile(token);
-      final userData = result['data'];
-      return Right(UserModel.fromJson(userData));
+      final userData = result['data'] as Map<String, dynamic>;
+      final userDataWithToken = {
+        ...userData,
+        'token': token,
+      };
+      AppLogger.log('User data with token: $userDataWithToken');
+      return Right(UserModel.fromJson(userDataWithToken));
     } on ApiException catch (e) {
       return Left(e.message);
     } catch (e) {

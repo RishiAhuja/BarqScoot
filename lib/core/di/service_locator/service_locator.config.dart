@@ -33,7 +33,7 @@ import '../../../features/home/domain/repository/scooter_repository.dart'
 import '../../../features/rides/data/repository/ride_repo_impl.dart' as _i953;
 import '../../../features/rides/data/service/location_service.dart' as _i804;
 import '../../../features/rides/data/service/ride_service.dart' as _i417;
-import '../../../features/rides/domain/repository/scooter_repository.dart'
+import '../../../features/rides/domain/repository/ride_repository.dart'
     as _i419;
 import '../../../features/rides/domain/usecases/start_ride_usecase.dart'
     as _i841;

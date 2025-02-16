@@ -54,4 +54,30 @@ class ScooterService {
       throw ApiException('Failed to fetch scooters: $e');
     }
   }
+
+  Future<Map<String, dynamic>> getScooterById(String scooterId) async {
+    try {
+      final user = _storageService.getUser();
+      if (user == null) throw ApiException('User not authenticated');
+
+      final response = await _client.get(
+        Uri.parse('${BaseApi.baseScooterUrl}/v1/scooters/$scooterId'),
+        headers: {
+          'Authorization': 'Bearer ${user.token}',
+        },
+      );
+
+      // AppLogger.log('Scooter Response Status: ${response.statusCode}');
+      // AppLogger.log('Scooter Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+
+      throw ApiException.fromResponse(response);
+    } catch (e) {
+      AppLogger.error('Failed to fetch scooter', error: e);
+      throw ApiException('Failed to fetch scooter: $e');
+    }
+  }
 }

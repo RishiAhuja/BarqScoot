@@ -1,5 +1,6 @@
 import 'package:escooter/features/home/presentation/provider/location_provider.dart';
 import 'package:escooter/features/home/presentation/provider/scooter_provider.dart';
+import 'package:escooter/features/home/presentation/widgets/location_permission_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
@@ -19,6 +20,12 @@ class _MapViewState extends ConsumerState<MapView> {
 
   @override
   Widget build(BuildContext context) {
+    return LocationPermissionHandler(
+      child: _buildMap(),
+    );
+  }
+
+  Widget _buildMap() {
     final locationAsync = ref.watch(userLocationProvider);
     final scootersAsync = ref.watch(scootersNotifierProvider);
 

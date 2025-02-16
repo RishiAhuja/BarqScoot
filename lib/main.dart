@@ -13,13 +13,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
+    AppLogger.log('====================================');
     await configureDependencies();
     final storageService = getIt<StorageService>();
     await storageService.initHive();
     await AppRouter.authNotifier.initializeAuth();
 
-    AppLogger.log('====================================');
+    final user = storageService.getUser();
+    if (user != null) {
+      AppLogger.log('User Token: ${user.token}');
+    } else {
+      AppLogger.log('No user token found');
+    }
     AppLogger.log('Dependencies configured successfully');
+    AppLogger.log('====================================');
   } catch (e) {
     AppLogger.error('Failed to configure dependencies: $e');
   }

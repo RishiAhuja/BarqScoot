@@ -4,6 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:escooter/core/configs/services/api/base_api.dart';
 import 'package:escooter/core/configs/services/api/base_api_config.dart';
 import 'package:escooter/core/error/api_exceptions.dart';
+import 'package:escooter/features/auth/data/models/login_reponse.dart';
 import 'package:escooter/features/auth/domain/entities/create_user_request.dart';
 import 'package:escooter/features/auth/domain/entities/login_request.dart';
 import 'package:escooter/utils/logger.dart';
@@ -97,7 +98,7 @@ class AuthApiService {
     }
   }
 
-  Future<Map<String, dynamic>> login(LoginRequest request) async {
+  Future<LoginResponse> login(LoginRequest request) async {
     try {
       final response = await _client.post(
         Uri.parse('${BaseApi.baseUrl}/auth/login'),
@@ -106,8 +107,15 @@ class AuthApiService {
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final loginResponse = LoginResponse.fromJson(jsonDecode(response.body));
+
+        AppLogger.log('Login Response Status: ${response.statusCode}');
+        AppLogger.log('Login Response body: ${response.body}');
+        return loginResponse;
       }
+
+      AppLogger.log('Failed to login: ${response.statusCode}');
+      AppLogger.log('Failed to login: ${response.body}');
 
       throw ApiException.fromResponse(response);
     } catch (e) {
@@ -125,12 +133,21 @@ class AuthApiService {
         },
       );
 
+      // Log response status and body
+      AppLogger.log('Profile Response Status: ${response.statusCode}');
+      AppLogger.log('Profile Response Body: ${response.body}');
+
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       }
 
+      AppLogger.error(
+        'Failed to get profile',
+        error: 'Status: ${response.statusCode}, Body: ${response.body}',
+      );
       throw ApiException.fromResponse(response);
     } catch (e) {
+      AppLogger.error('Error getting profile', error: e);
       throw ApiException('Failed to get user profile: $e');
     }
   }

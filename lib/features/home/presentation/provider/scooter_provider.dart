@@ -20,7 +20,10 @@ class ScootersNotifier extends _$ScootersNotifier {
         AppLogger.error(failure);
         throw Exception(failure);
       },
-      (scooters) => scooters,
+      (scooters) {
+        // scooters.forEach((s) => AppLogger.log(s.id));
+        return scooters;
+      },
     );
   }
 

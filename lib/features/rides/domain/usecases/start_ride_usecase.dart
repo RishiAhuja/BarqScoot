@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:escooter/features/rides/data/service/location_service.dart';
-import 'package:escooter/features/rides/domain/repository/scooter_repository.dart';
+import 'package:escooter/features/rides/domain/repository/ride_repository.dart';
 import 'package:escooter/utils/logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:escooter/core/usecases/usecase.dart';

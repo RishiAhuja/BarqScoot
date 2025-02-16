@@ -78,51 +78,102 @@ class BottomSheetContent extends ConsumerWidget {
             ),
             // Nearby scooters list
             scootersAsync.when(
-              data: (scooters) => ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: scooters.length,
-                itemBuilder: (context, index) => ListTile(
-                  onTap: () {},
-                  leading: Icon(
-                    Icons.electric_scooter,
-                    color: isDarkMode ? Colors.white70 : Colors.black54,
-                  ),
-                  title: Text(
-                    scooters[index].name,
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black87,
-                    ),
-                  ),
-                  subtitle: locationAsync.when(
-                    data: (position) => Text(
-                      '${_calculateDistance(position, scooters[index])}km away',
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.white70 : Colors.black54,
-                      ),
-                    ),
-                    loading: () => const Text('Calculating distance...'),
-                    error: (_, __) => const Text('Unable to get distance'),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.battery_charging_full,
-                        color: _getBatteryColor(scooters[index].batteryLevel),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${scooters[index].batteryLevel}%',
-                        style: TextStyle(
-                          color: isDarkMode ? Colors.white : Colors.black87,
+              data: (scooters) {
+                return locationAsync.when(
+                  data: (position) {
+                    // Filter available scooters first
+                    final availableScooters =
+                        scooters.where((s) => s.status == 'available').toList();
+
+                    // Sort filtered scooters by distance
+                    final sortedScooters = List<Scooter>.from(availableScooters)
+                      ..sort((a, b) {
+                        final distanceA = Geolocator.distanceBetween(
+                          position.latitude,
+                          position.longitude,
+                          a.latitude,
+                          a.longitude,
+                        );
+                        final distanceB = Geolocator.distanceBetween(
+                          position.latitude,
+                          position.longitude,
+                          b.latitude,
+                          b.longitude,
+                        );
+                        return distanceA.compareTo(distanceB);
+                      });
+
+                    // Log available scooter IDs
+                    // for (final scooter in sortedScooters) {
+                    //   AppLogger.log(
+                    //       'Available scooter: ${scooter.id} : ${scooter.name} : ${scooter.status}');
+                    // }
+
+                    if (sortedScooters.isEmpty) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Text(
+                            'No available scooters nearby',
+                            style: TextStyle(
+                              color:
+                                  isDarkMode ? Colors.white70 : Colors.black54,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: sortedScooters.length,
+                      itemBuilder: (context, index) => ListTile(
+                        onTap: () {},
+                        leading: Icon(
+                          Icons.electric_scooter,
+                          color: isDarkMode ? Colors.white70 : Colors.black54,
+                        ),
+                        title: Text(
+                          sortedScooters[index].name,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        subtitle: Text(
+                          '${_calculateDistance(position, sortedScooters[index])}km away',
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                          ),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.battery_charging_full,
+                              color: _getBatteryColor(
+                                  sortedScooters[index].batteryLevel),
+                              size: 20,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${sortedScooters[index].batteryLevel}%',
+                              style: TextStyle(
+                                color:
+                                    isDarkMode ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (_, __) => const Text('Unable to get location'),
+                );
+              },
               loading: () => const CircularProgressIndicator(),
               error: (_, __) => const Text('Error loading scooters'),
             ),

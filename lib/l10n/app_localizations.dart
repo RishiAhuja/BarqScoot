@@ -82,6 +82,17 @@ class AppLocalizations {
 
       // Drawer
       AppLocalizationConstants.helpAndSupport: 'Help & Support',
+
+      // Ride Related
+      AppLocalizationConstants.rideEnded: 'Ride Ended',
+      AppLocalizationConstants.rideEndedSuccessfully:
+          'Your ride has been ended successfully.',
+      AppLocalizationConstants.failedToEndRide: 'Failed to end ride',
+      AppLocalizationConstants.batteryLevel: 'Battery Level',
+      AppLocalizationConstants.lastStation: 'Last Station',
+      AppLocalizationConstants.scooterStatus: 'Status',
+      AppLocalizationConstants.ok: 'OK',
+      AppLocalizationConstants.error: 'Error',
     },
     AppLocalizationConstants.ar: {
       // Authentication
@@ -148,6 +159,16 @@ class AppLocalizations {
 
       // Drawer
       AppLocalizationConstants.helpAndSupport: 'المساعدة والدعم',
+
+      // Ride Related
+      AppLocalizationConstants.rideEnded: 'انتهت الرحلة',
+      AppLocalizationConstants.rideEndedSuccessfully: 'تم إنهاء رحلتك بنجاح',
+      AppLocalizationConstants.failedToEndRide: 'فشل في إنهاء الرحلة',
+      AppLocalizationConstants.batteryLevel: 'مستوى البطارية',
+      AppLocalizationConstants.lastStation: 'المحطة الأخيرة',
+      AppLocalizationConstants.scooterStatus: 'الحالة',
+      AppLocalizationConstants.ok: 'موافق',
+      AppLocalizationConstants.error: 'خطأ',
     },
   };
 

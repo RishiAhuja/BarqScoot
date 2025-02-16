@@ -6,7 +6,7 @@ part of 'scooter_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$scootersNotifierHash() => r'56ea4fd1561b47199110a6b94b722b0a991a9e5d';
+String _$scootersNotifierHash() => r'6558aab6ac656fb0020bba8eed7d82b49027abec';
 
 /// See also [ScootersNotifier].
 @ProviderFor(ScootersNotifier)

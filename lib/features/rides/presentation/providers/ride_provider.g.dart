@@ -6,7 +6,7 @@ part of 'ride_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$ridesHash() => r'6f2db7545c9a36320d4a0acdc520203775afd70d';
+String _$ridesHash() => r'1df26a861a79a9db820f1d8e331fdaceb09230dd';
 
 /// See also [Rides].
 @ProviderFor(Rides)

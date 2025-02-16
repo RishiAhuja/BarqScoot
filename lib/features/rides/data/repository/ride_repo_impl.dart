@@ -1,9 +1,11 @@
 import 'package:dartz/dartz.dart';
+import 'package:escooter/core/error/api_exceptions.dart';
 import 'package:escooter/features/rides/data/model/ride_model.dart';
 import 'package:escooter/features/rides/data/service/location_service.dart';
 import 'package:escooter/features/rides/data/service/ride_service.dart';
+import 'package:escooter/features/rides/domain/entities/end_ride_request.dart';
 import 'package:escooter/features/rides/domain/entities/start_ride_request.dart';
-import 'package:escooter/features/rides/domain/repository/scooter_repository.dart';
+import 'package:escooter/features/rides/domain/repository/ride_repository.dart';
 import 'package:escooter/utils/logger.dart';
 import 'package:injectable/injectable.dart';
 
@@ -42,6 +44,19 @@ class RideRepositoryImpl implements RideRepository {
       return Right(rides);
     } catch (e) {
       return Left('Failed to get rides: $e');
+    }
+  }
+
+  @override
+  Future<Either<String, void>> endRide(
+      String rideId, EndRideRequest request) async {
+    try {
+      await _rideService.endRide(rideId, request);
+      return const Right(null);
+    } on ApiException catch (e) {
+      return Left(e.message);
+    } catch (e) {
+      return Left('Failed to end ride: $e');
     }
   }
 }

@@ -43,4 +43,19 @@ class Scooter {
       lastUpdatedBy: json['lastUpdatedBy'],
     );
   }
+
+  factory Scooter.empty() {
+    return Scooter(
+      id: '',
+      name: '',
+      location: '',
+      lastStation: '',
+      batteryLevel: 0,
+      status: '',
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      createdBy: '',
+      lastUpdatedBy: '',
+    );
+  }
 }

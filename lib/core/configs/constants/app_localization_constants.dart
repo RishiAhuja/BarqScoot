@@ -71,4 +71,14 @@ class AppLocalizationConstants {
   // Drawer
   static const String helpAndSupport = 'helpAndSupport';
   static const String settings = 'settings';
+
+  // Ride Related
+  static const String rideEnded = 'rideEnded';
+  static const String rideEndedSuccessfully = 'rideEndedSuccessfully';
+  static const String failedToEndRide = 'failedToEndRide';
+  static const String batteryLevel = 'batteryLevel';
+  static const String lastStation = 'lastStation';
+  static const String scooterStatus = 'scooterStatus';
+  static const String ok = 'ok';
+  static const String error = 'error';
 }

@@ -7,7 +7,7 @@ import 'package:escooter/utils/logger.dart';
 import 'package:go_router/go_router.dart';
 import 'package:escooter/l10n/app_localizations.dart';
 
-class RideBottomCard extends ConsumerWidget {
+class RideBottomCard extends ConsumerStatefulWidget {
   final Scooter scooter;
   final String rideId;
   final bool isDarkMode;
@@ -19,89 +19,51 @@ class RideBottomCard extends ConsumerWidget {
     required this.isDarkMode,
   });
 
-  Future<void> _handleEndRide(BuildContext context, WidgetRef ref) async {
-    final translations = ref.watch(appLocalizationsProvider);
+  @override
+  ConsumerState<RideBottomCard> createState() => _RideBottomCardState();
+}
+
+class _RideBottomCardState extends ConsumerState<RideBottomCard> {
+  bool _isLoading = false;
+
+  Future<void> _handleEndRide() async {
+    if (_isLoading) return;
 
     try {
-      // Show loading dialog
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              Text(
-                translations.translate(AppLocalizationConstants.endRide),
-                style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black87),
-              ),
-            ],
-          ),
-        ),
-      );
+      setState(() {
+        _isLoading = true;
+      });
 
-      // End the ride using provider
-      await ref.read(ridesProvider.notifier).endRide(rideId, scooter.id);
+      await ref
+          .read(ridesProvider.notifier)
+          .endRide(widget.rideId, widget.scooter.id);
 
-      if (context.mounted) {
-        // Close loading dialog
-        Navigator.pop(context);
-
-        // Show success dialog
-        await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => AlertDialog(
-            title: Text(
-                translations.translate(AppLocalizationConstants.rideEnded)),
-            content: Text(translations
-                .translate(AppLocalizationConstants.rideEndedSuccessfully)),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  context.pop(); // Close dialog
-                  context.go('/home'); // Navigate to home
-                },
-                child:
-                    Text(translations.translate(AppLocalizationConstants.ok)),
-              ),
-            ],
-          ),
-        );
+      await ref.read(ridesProvider.notifier).refresh();
+      if (mounted) {
+        context.go('/home');
       }
     } catch (e) {
       AppLogger.error('Failed to end ride in UI', error: e);
 
-      if (context.mounted) {
-        // Close loading dialog if open
-        Navigator.maybeOf(context)?.pop();
-
-        // Show error dialog
-        await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(translations.translate(AppLocalizationConstants.error)),
-            content: Text(
-              '${translations.translate(AppLocalizationConstants.failedToEndRide)}: ${e.toString()}',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => context.pop(),
-                child:
-                    Text(translations.translate(AppLocalizationConstants.ok)),
-              ),
-            ],
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to end ride: ${e.toString()}'),
+            backgroundColor: Colors.red,
           ),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final translations = ref.watch(appLocalizationsProvider);
 
@@ -112,7 +74,7 @@ class RideBottomCard extends ConsumerWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      color: isDarkMode ? Colors.grey[850] : Colors.white,
+      color: widget.isDarkMode ? Colors.grey[850] : Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -128,9 +90,9 @@ class RideBottomCard extends ConsumerWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    scooter.name,
+                    widget.scooter.name,
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      color: isDarkMode ? Colors.white : Colors.black87,
+                      color: widget.isDarkMode ? Colors.white : Colors.black87,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -152,7 +114,7 @@ class RideBottomCard extends ConsumerWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${scooter.batteryLevel}%',
+                        '${widget.scooter.batteryLevel}%',
                         style: TextStyle(
                           color: theme.colorScheme.primary,
                           fontWeight: FontWeight.w500,
@@ -168,13 +130,13 @@ class RideBottomCard extends ConsumerWidget {
               children: [
                 _buildInfoChip(
                   icon: Icons.location_on,
-                  label: scooter.lastStation,
+                  label: widget.scooter.lastStation,
                   theme: theme,
                 ),
                 const SizedBox(width: 12),
                 _buildInfoChip(
                   icon: Icons.info_outline,
-                  label: scooter.status,
+                  label: widget.scooter.status,
                   theme: theme,
                 ),
               ],
@@ -183,19 +145,33 @@ class RideBottomCard extends ConsumerWidget {
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: () => _handleEndRide(context, ref),
+                onPressed: _isLoading ? null : _handleEndRide,
                 style: FilledButton.styleFrom(
                   backgroundColor: Colors.red,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 12),
+                  disabledBackgroundColor: Colors.red.withOpacity(0.6),
                 ),
-                child: Text(
-                  translations.translate(AppLocalizationConstants.endRide),
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w600, color: Colors.white),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        translations
+                            .translate(AppLocalizationConstants.endRide),
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
           ],
@@ -212,7 +188,7 @@ class RideBottomCard extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.grey[100],
+        color: widget.isDarkMode ? Colors.grey[800] : Colors.grey[100],
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -221,13 +197,13 @@ class RideBottomCard extends ConsumerWidget {
           Icon(
             icon,
             size: 16,
-            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            color: widget.isDarkMode ? Colors.grey[400] : Colors.grey[600],
           ),
           const SizedBox(width: 6),
           Text(
             label,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+              color: widget.isDarkMode ? Colors.grey[300] : Colors.grey[700],
             ),
           ),
         ],

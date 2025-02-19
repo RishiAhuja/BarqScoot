@@ -19,6 +19,7 @@ Future<void> configureDependencies() async {
   getIt.init();
   assert(getIt.isRegistered<http.Client>(instanceName: 'httpClient'));
   assert(getIt.isRegistered<AuthApiService>(instanceName: 'authApiService'));
+
   await _initializeAsyncDependencies();
 }
 

@@ -1,12 +1,16 @@
+import 'package:escooter/common/router/app_router.dart';
 import 'package:escooter/core/configs/theme/app_colors.dart';
 import 'package:escooter/features/home/domain/entity/scooter/scooter.dart';
 import 'package:escooter/features/home/presentation/provider/scooter_provider.dart';
+import 'package:escooter/features/rides/presentation/providers/ride_provider.dart';
 import 'package:escooter/features/theme/presentation/providers/theme_provider.dart';
+import 'package:escooter/utils/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:escooter/features/wallet/presentation/providers/balance_provider.dart';
+import 'package:go_router/go_router.dart';
 
-import '../provider/user_stats_provider.dart';
 import '../provider/location_provider.dart';
 
 class BottomSheetContent extends ConsumerWidget {
@@ -14,11 +18,11 @@ class BottomSheetContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final statsAsync = ref.watch(userStatsNotifierProvider);
     final scootersAsync = ref.watch(scootersNotifierProvider);
     final isDarkMode = ref.watch(themeProvider).isDark;
-    final theme = Theme.of(context);
     final locationAsync = ref.watch(userLocationProvider);
+    final balanceAsync = ref.watch(balanceProvider);
+    final ridesAsync = ref.watch(ridesProvider);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.3,
@@ -43,49 +47,67 @@ class BottomSheetContent extends ConsumerWidget {
                 ),
               ),
             ),
-            statsAsync.when(
-              data: (stats) => Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _StatItem(
-                      title: 'Total Rides',
-                      value: '${stats.totalRides}',
-                      icon: Icons.history,
-                      isDark: isDarkMode,
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _StatItem(
+                    title: 'Total Rides',
+                    value: ridesAsync.when(
+                      data: (rides) {
+                        final completedRides = rides
+                            .where((r) => r.status == 'completed')
+                            .toList();
+                        return '${completedRides.length}';
+                      },
+                      loading: () => '-',
+                      error: (_, __) => '-',
                     ),
-                    _StatItem(
-                      title: 'Balance',
-                      value: '﷼${stats.walletBalance}',
-                      icon: Icons.account_balance_wallet,
-                      isDark: isDarkMode,
+                    icon: Icons.history,
+                    isDark: isDarkMode,
+                    onTap: () => context.push(AppPaths.rideHistory),
+                  ),
+                  _StatItem(
+                    title: 'Balance',
+                    value: balanceAsync.when(
+                      data: (balance) => '﷼${balance.toStringAsFixed(2)}',
+                      loading: () => '-',
+                      error: (_, __) => '-',
                     ),
-                  ],
-                ),
-              ),
-              loading: () => Center(
-                child: CircularProgressIndicator(
-                  color: isDarkMode ? Colors.white : theme.primaryColor,
-                ),
-              ),
-              error: (_, __) => Text(
-                'Error loading stats',
-                style: TextStyle(
-                  color: isDarkMode ? Colors.red[300] : Colors.red,
-                ),
+                    icon: Icons.account_balance_wallet,
+                    isDark: isDarkMode,
+                    onTap: () => context.push(AppPaths.wallet),
+                  ),
+                  _StatItem(
+                    title: 'Total Cost',
+                    value: ridesAsync.when(
+                      data: (rides) {
+                        final completedRides =
+                            rides.where((r) => r.status == 'completed');
+                        final totalCost = completedRides.fold<double>(
+                          0,
+                          (sum, ride) => sum + (ride.totalPrice),
+                        );
+                        return '﷼${totalCost.toStringAsFixed(2)}';
+                      },
+                      loading: () => '-',
+                      error: (_, __) => '-',
+                    ),
+                    icon: Icons.payments_outlined,
+                    isDark: isDarkMode,
+                    onTap: () => context.push(AppPaths.rideHistory),
+                  ),
+                ],
               ),
             ),
-            // Nearby scooters list
             scootersAsync.when(
               data: (scooters) {
                 return locationAsync.when(
                   data: (position) {
-                    // Filter available scooters first
                     final availableScooters =
                         scooters.where((s) => s.status == 'available').toList();
 
-                    // Sort filtered scooters by distance
                     final sortedScooters = List<Scooter>.from(availableScooters)
                       ..sort((a, b) {
                         final distanceA = Geolocator.distanceBetween(
@@ -104,10 +126,10 @@ class BottomSheetContent extends ConsumerWidget {
                       });
 
                     // Log available scooter IDs
-                    // for (final scooter in sortedScooters) {
-                    //   AppLogger.log(
-                    //       'Available scooter: ${scooter.id} : ${scooter.name} : ${scooter.status}');
-                    // }
+                    for (final scooter in sortedScooters) {
+                      AppLogger.log(
+                          'Available scooter: ${scooter.id} : ${scooter.name} : ${scooter.status}');
+                    }
 
                     if (sortedScooters.isEmpty) {
                       return Center(
@@ -208,23 +230,45 @@ class _StatItem extends StatelessWidget {
   final String value;
   final IconData icon;
   final bool isDark;
+  final VoidCallback? onTap;
 
   const _StatItem({
     required this.title,
     required this.value,
     required this.icon,
     required this.isDark,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, color: isDark ? Colors.white : Colors.black),
-        const SizedBox(height: 8),
-        Text(value, style: Theme.of(context).textTheme.headlineSmall),
-        Text(title, style: Theme.of(context).textTheme.bodyLarge),
-      ],
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: isDark ? Colors.white : Colors.black,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+            ),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: isDark ? Colors.white70 : Colors.black54,
+                  ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

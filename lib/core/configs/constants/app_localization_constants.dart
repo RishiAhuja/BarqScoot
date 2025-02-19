@@ -81,4 +81,5 @@ class AppLocalizationConstants {
   static const String scooterStatus = 'scooterStatus';
   static const String ok = 'ok';
   static const String error = 'error';
+  static const String endingRide = 'endingRide';
 }

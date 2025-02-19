@@ -225,7 +225,6 @@ class _MapViewState extends ConsumerState<MapView> {
     super.dispose();
   }
 
-  // Add this helper method to the class
   Color _getBatteryColor(int level) {
     if (level > 70) return Colors.green;
     if (level > 30) return Colors.orange;

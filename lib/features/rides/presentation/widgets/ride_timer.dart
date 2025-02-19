@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 
 class RideTimer extends StatefulWidget {
   final DateTime startTime;
+  final double distanceCovered;
 
   const RideTimer({
     super.key,
     required this.startTime,
+    required this.distanceCovered,
   });
 
   @override
@@ -16,6 +18,14 @@ class RideTimer extends StatefulWidget {
 class _RideTimerState extends State<RideTimer> {
   late Timer _timer;
   late Duration _elapsed;
+  static const double _minuteRate = 0.15;
+  static const double _distanceRate = 0.5;
+
+  double get _estimatedCost {
+    final timeBasedCost = _elapsed.inMinutes * _minuteRate;
+    final distanceBasedCost = widget.distanceCovered * _distanceRate;
+    return timeBasedCost + distanceBasedCost;
+  }
 
   @override
   void initState() {
@@ -65,6 +75,13 @@ class _RideTimerState extends State<RideTimer> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            Text(
+              '${widget.distanceCovered.toStringAsFixed(2)} km',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
+            ),
           ],
         ),
         Column(
@@ -78,11 +95,18 @@ class _RideTimerState extends State<RideTimer> {
               ),
             ),
             Text(
-              '﷼${(_elapsed.inMinutes * 0.5).toStringAsFixed(2)}',
+              '﷼${_estimatedCost.toStringAsFixed(2)}',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              '﷼${_minuteRate}/min + ﷼${_distanceRate}/km',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 12,
               ),
             ),
           ],

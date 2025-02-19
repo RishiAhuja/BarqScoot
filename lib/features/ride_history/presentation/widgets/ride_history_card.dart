@@ -21,6 +21,17 @@ class RideHistoryCard extends StatelessWidget {
     required this.isDarkMode,
   });
 
+  String _formatLocation(String location) {
+    try {
+      final coordinates = location.split(',');
+      final lat = double.parse(coordinates[0]).toStringAsFixed(2);
+      final lng = double.parse(coordinates[1]).toStringAsFixed(2);
+      return '$lat, $lng';
+    } catch (e) {
+      return location;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -53,13 +64,13 @@ class RideHistoryCard extends StatelessWidget {
               const SizedBox(height: 8),
               _buildLocationRow(
                 icon: Icons.location_on,
-                text: startLocation,
+                text: _formatLocation(startLocation),
                 isDarkMode: isDarkMode,
               ),
               const SizedBox(height: 4),
               _buildLocationRow(
                 icon: Icons.location_on_outlined,
-                text: endLocation,
+                text: _formatLocation(endLocation),
                 isDarkMode: isDarkMode,
               ),
               const SizedBox(height: 8),
@@ -73,7 +84,7 @@ class RideHistoryCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '﷼$cost',
+                    '﷼${cost.toStringAsFixed(2)}',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: isDarkMode ? Colors.white : Colors.black87,

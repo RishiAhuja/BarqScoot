@@ -8,22 +8,24 @@ class Ride {
   final DateTime startTime;
   final DateTime? endTime;
   final double distanceCovered;
-  final double totalPrice;
+  final double? totalPrice; // Changed from final to mutable
   final String status;
   final String startLocation;
   final String? endLocation;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final Scooter? scooter; // Make scooter optional
+  final Scooter? scooter;
+  final bool isPaid;
 
-  const Ride({
+  Ride({
+    this.isPaid = false,
     required this.id,
     required this.userId,
     required this.scooterId,
     required this.startTime,
     this.endTime,
     required this.distanceCovered,
-    required this.totalPrice,
+    this.totalPrice,
     required this.status,
     required this.startLocation,
     this.endLocation,
@@ -37,6 +39,7 @@ class Ride {
       AppLogger.log('Parsing ride JSON: ${json.toString()}');
 
       return Ride(
+        isPaid: json['isPaid'] as bool? ?? false,
         id: json['id'] as String,
         userId: json['userId'] as String,
         scooterId: json['scooterId'] as String,
@@ -76,5 +79,31 @@ class Ride {
       return null;
     }
     return Scooter.fromJson(json);
+  }
+
+  // Add a copyWith method to create a new instance with updated values
+  Ride copyWith({
+    String? id,
+    DateTime? startTime,
+    DateTime? endTime,
+    double? distanceCovered,
+    double? totalPrice,
+  }) {
+    return Ride(
+      isPaid: isPaid,
+      id: id ?? this.id,
+      userId: userId,
+      scooterId: scooterId,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      distanceCovered: distanceCovered ?? this.distanceCovered,
+      totalPrice: totalPrice ?? this.totalPrice,
+      status: status,
+      startLocation: startLocation,
+      endLocation: endLocation,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      scooter: scooter,
+    );
   }
 }

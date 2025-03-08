@@ -1,12 +1,17 @@
 import 'package:escooter/features/ride_history/presentation/widgets/error_view.dart';
 import 'package:escooter/features/rides/data/model/ride_model.dart';
+import 'package:escooter/features/rides/presentation/providers/ride_completion_provider.dart';
 import 'package:escooter/features/rides/presentation/providers/ride_provider.dart';
+import 'package:escooter/features/payment/presentation/screen/ride_payment_screen.dart';
+import 'package:escooter/features/rides/presentation/widgets/active_ride_map.dart';
 import 'package:escooter/features/rides/presentation/widgets/ride_bottom_card.dart';
 import 'package:escooter/features/rides/presentation/widgets/ride_timer.dart';
+import 'package:escooter/utils/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../widgets/active_ride_map.dart';
+// ignore: depend_on_referenced_packages
+import 'package:collection/collection.dart';
 
 class ActiveRideScreen extends ConsumerWidget {
   const ActiveRideScreen({super.key});
@@ -15,6 +20,7 @@ class ActiveRideScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final ridesAsync = ref.watch(ridesProvider);
+    final isRideJustEnded = ref.watch(rideCompletionProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -32,17 +38,46 @@ class ActiveRideScreen extends ConsumerWidget {
       ),
       body: ridesAsync.when(
         data: (rides) {
+          AppLogger.log('''
+      Rides state:
+      Total rides: ${rides.length}
+      Just ended: $isRideJustEnded
+      Ongoing rides: ${rides.where((r) => r.status == 'ongoing').length}
+      Unpaid completed rides: ${rides.where((r) => r.status == 'completed' && !r.isPaid).length}
+    ''');
+
+          final unpaidRide = rides.lastWhereOrNull((ride) =>
+              ride.status == 'completed' &&
+              ride.totalPrice != null &&
+              !ride.isPaid);
+
+          if (unpaidRide != null) {
+            AppLogger.log(
+                'Found unpaid ride: ${unpaidRide.id} with cost: ${unpaidRide.totalPrice}');
+            return RidePaymentScreen(ride: unpaidRide);
+          }
+
+          // Then check for ongoing rides
           final activeRide =
-              rides.where((ride) => ride.status == 'ongoing').firstOrNull;
-          return activeRide != null
-              ? ActiveRideView(ride: activeRide)
-              : const NoActiveRideView();
+              rides.firstWhereOrNull((ride) => ride.status == 'ongoing');
+
+          if (activeRide != null) {
+            AppLogger.log('Found active ride: ${activeRide.id}');
+            return ActiveRideView(ride: activeRide);
+          }
+
+          // If no active or unpaid rides, show empty state
+          AppLogger.log('No active or unpaid rides found');
+          return const NoActiveRideView();
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => ErrorView(
-          message: error.toString(),
-          onRetry: () => ref.refresh(ridesProvider),
-        ),
+        error: (error, stack) {
+          AppLogger.error('Error loading rides:', error: error);
+          return ErrorView(
+            message: error.toString(),
+            onRetry: () => ref.refresh(ridesProvider),
+          );
+        },
       ),
     );
   }

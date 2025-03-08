@@ -85,7 +85,7 @@ class RideHistoryScreen extends ConsumerWidget {
                         endLocation: ride.endLocation ?? 'Unknown',
                         duration: ride.endTime?.difference(ride.startTime) ??
                             Duration.zero,
-                        cost: ride.totalPrice,
+                        cost: ride.totalPrice ?? 0,
                         onTap: () {},
                         isDarkMode: isDarkMode,
                       ),

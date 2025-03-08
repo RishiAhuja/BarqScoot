@@ -27,7 +27,7 @@ class RideRepositoryImpl implements RideRepository {
       );
 
       await _rideService.startRide(request);
-      AppLogger.log('ride started successfully');
+      // AppLogger.log('ride started successfully');
 
       return const Right(null);
     } catch (e) {

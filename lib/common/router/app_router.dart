@@ -9,9 +9,13 @@ import 'package:escooter/features/home/presentation/screens/home_screen.dart';
 import 'package:escooter/features/onboarding/presentation/welcome_screen.dart';
 import 'package:escooter/features/profile/presentation/screens/profile_screen.dart';
 import 'package:escooter/features/ride_history/presentation/screen/ride_history_screen.dart';
+import 'package:escooter/features/rides/data/model/ride_model.dart';
 import 'package:escooter/features/rides/presentation/screens/active_ride_screen.dart';
+import 'package:escooter/features/payment/presentation/screen/ride_payment_screen.dart';
 import 'package:escooter/features/scanner/presentation/screens/qr_scanner.dart';
 import 'package:escooter/features/wallet/presentation/screens/wallet_screen.dart';
+import 'package:escooter/main.dart';
+import 'package:escooter/utils/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -30,12 +34,14 @@ class AppPaths {
   static const String profile = '/profile';
   static const String notifications = '/notifications';
   static const String settings = '/settings';
+  static const String ridePayment = '/ride-payment';
 }
 
 class AppRouter {
   static final authNotifier = AuthNotifier(getIt<StorageService>());
 
   static final router = GoRouter(
+    navigatorKey: navigatorKey,
     initialLocation: AppPaths.splash,
     refreshListenable: authNotifier,
     redirect: (context, state) {
@@ -97,6 +103,14 @@ class AppRouter {
       GoRoute(
         path: AppPaths.profile,
         builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: '/ride-payment',
+        builder: (context, state) {
+          AppLogger.log('Building RidePaymentScreen');
+          final ride = state.extra as Ride;
+          return RidePaymentScreen(ride: ride);
+        },
       ),
     ],
   );

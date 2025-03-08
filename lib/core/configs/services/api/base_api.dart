@@ -5,4 +5,5 @@ class BaseApi {
   static String get baseScooterUrl => EnvConfig.apiBaseScooterUrl;
   static String get basePaymentUrl => EnvConfig.apiPaymentUrl;
   static String get socketScooterUrl => EnvConfig.socketBaseScooterUrl;
+  static String get apiPromoService => EnvConfig.apiPromoService;
 }

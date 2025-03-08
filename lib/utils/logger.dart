@@ -14,7 +14,9 @@ class AppLogger {
   );
 
   static void log(String message, {String tag = 'ESCOOTER'}) {
-    _logger.i('[$tag] $message');
+    if (!message.contains('Parsing ride JSON')) {
+      _logger.i('[$tag] $message');
+    }
   }
 
   static void debug(String message, {String tag = 'ESCOOTER'}) {

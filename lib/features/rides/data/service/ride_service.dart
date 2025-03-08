@@ -1,9 +1,12 @@
 import 'dart:convert';
 
 import 'package:escooter/core/configs/services/api/base_api.dart';
+// import 'package:escooter/features/rides/data/model/ride_model.dart';
 import 'package:escooter/features/rides/domain/entities/end_ride_request.dart';
 import 'package:escooter/features/rides/domain/entities/start_ride_request.dart';
+// import 'package:escooter/main.dart';
 import 'package:escooter/utils/logger.dart';
+// import 'package:flutter/src/widgets/framework.dart';
 import 'package:http/http.dart' as http;
 import 'package:injectable/injectable.dart';
 import 'package:escooter/core/error/api_exceptions.dart';
@@ -73,7 +76,7 @@ class RideService {
         final List<dynamic> data = jsonDecode(response.body);
         final List<Map<String, dynamic>> rides =
             List<Map<String, dynamic>>.from(data);
-        AppLogger.log('Fetched rides: $rides');
+        // AppLogger.log('Fetched rides: $rides');
         // Process ongoing rides to fetch scooter details
         final updatedRides = await Future.wait(rides.map((ride) async {
           if (ride['status'] == 'ongoing') {
@@ -84,6 +87,7 @@ class RideService {
               return {
                 ...ride,
                 'scooter': scooterResponse,
+                'isPaid': false,
               };
             } catch (e) {
               AppLogger.error('Failed to fetch scooter for ride: ${ride['id']}',
@@ -94,7 +98,7 @@ class RideService {
           return ride;
         }));
 
-        AppLogger.log('Updated rides with scooter details: $updatedRides');
+        // AppLogger.log('Updated rides with scooter details: $updatedRides');
         return updatedRides;
       }
 
@@ -118,8 +122,8 @@ class RideService {
         },
       );
 
-      AppLogger.log('Scooter Response Status: ${response.statusCode}');
-      AppLogger.log('Scooter Response Body: ${response.body}');
+      // AppLogger.log('Scooter Response Status: ${response.statusCode}');
+      // AppLogger.log('Scooter Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -139,8 +143,6 @@ class RideService {
       if (user == null) throw ApiException('User not authenticated');
 
       AppLogger.log('Ending ride with ID: $rideId');
-      AppLogger.log('End location: ${request.endLocation}');
-      AppLogger.log('Scooter ID: ${request.scooterId}');
       AppLogger.log('hitting: ${BaseApi.baseScooterUrl}/v1/rides/$rideId/end');
 
       final response = await _client.put(
@@ -156,7 +158,10 @@ class RideService {
       AppLogger.log('End Ride Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final Map<String, dynamic> rideData = jsonDecode(response.body);
+        // Add isPaid field
+        rideData['isPaid'] = false;
+        return rideData;
       }
 
       AppLogger.error('Failed to end ride: ${response.body}');

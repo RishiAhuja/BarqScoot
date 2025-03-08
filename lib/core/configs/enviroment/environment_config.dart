@@ -9,4 +9,6 @@ class EnvConfig {
       dotenv.get('API_PAYMENT_URL', fallback: 'http://10.0.2.2:8083/api');
   static String get socketBaseScooterUrl =>
       dotenv.get('WSS_SCOOTER_URL', fallback: 'http://10.0.2.2:8083/api');
+  static String get apiPromoService =>
+      dotenv.get('API_PROMO_URL', fallback: 'http://10.0.2.2:8083/api');
 }

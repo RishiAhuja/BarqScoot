@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
@@ -54,7 +56,7 @@ class MyApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      title: 'E Scooter',
+      title: 'Barq Scoot',
       theme: themeState.isDark ? AppTheme.darkTheme : AppTheme.lightTheme,
       builder: (context, child) {
         return Directionality(

@@ -1,11 +1,12 @@
 import 'package:escooter/core/configs/constants/app_localization_constants.dart';
+import 'package:escooter/features/rides/presentation/providers/ride_completion_provider.dart';
 import 'package:escooter/features/rides/presentation/providers/ride_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:escooter/features/home/domain/entity/scooter/scooter.dart';
 import 'package:escooter/utils/logger.dart';
-import 'package:go_router/go_router.dart';
 import 'package:escooter/l10n/app_localizations.dart';
+// import 'package:go_router/go_router.dart';
 
 class RideBottomCard extends ConsumerStatefulWidget {
   final Scooter scooter;
@@ -30,21 +31,26 @@ class _RideBottomCardState extends ConsumerState<RideBottomCard> {
     if (_isLoading) return;
 
     try {
-      setState(() {
-        _isLoading = true;
-      });
+      AppLogger.log('Attempting to end ride: _handleEndRide');
+      setState(() => _isLoading = true);
 
-      await ref
-          .read(ridesProvider.notifier)
-          .endRide(widget.rideId, widget.scooter.id);
+      final ridesNotifier = ref.read(ridesProvider.notifier);
+      final completedRide = await ridesNotifier.endRide(
+        widget.rideId,
+        widget.scooter.id,
+      );
 
-      await ref.read(ridesProvider.notifier).refresh();
-      if (mounted) {
-        context.go('/home');
+      if (!mounted) return;
+
+      if (completedRide != null) {
+        // Set the ride completion state
+        ref.read(rideCompletionProvider.notifier).setRideJustEnded(true);
+
+        // Refresh rides to update the UI
+        await ridesNotifier.refresh();
       }
     } catch (e) {
-      AppLogger.error('Failed to end ride in UI', error: e);
-
+      AppLogger.error('Error in _handleEndRide:', error: e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -55,9 +61,7 @@ class _RideBottomCardState extends ConsumerState<RideBottomCard> {
       }
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
       }
     }
   }

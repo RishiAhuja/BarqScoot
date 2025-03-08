@@ -1,9 +1,9 @@
+import 'package:escooter/features/rides/presentation/providers/scooter_location_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:escooter/features/home/presentation/provider/location_provider.dart';
-import 'package:escooter/features/rides/presentation/providers/scooter_location_provider.dart';
 
 class ActiveRideMap extends ConsumerStatefulWidget {
   final String scooterId;
@@ -139,5 +139,45 @@ class _ActiveRideMapState extends ConsumerState<ActiveRideMap> {
   void dispose() {
     _mapController.dispose();
     super.dispose();
+  }
+}
+
+class ScooterLocationStatus extends ConsumerWidget {
+  final String scooterId;
+
+  const ScooterLocationStatus({Key? key, required this.scooterId})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locationState = ref.watch(scooterLocationProvider);
+
+    return locationState.when(
+      data: (location) {
+        if (location == null) {
+          return const Center(
+            child: Text('Connecting to scooter...'),
+          );
+        }
+        return Text('Location: ${location.latitude}, ${location.longitude}');
+      },
+      error: (error, stack) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Connection failed'),
+            ElevatedButton(
+              onPressed: () => ref
+                  .read(scooterLocationProvider.notifier)
+                  .connectToScooter(scooterId),
+              child: const Text('Retry Connection'),
+            ),
+          ],
+        ),
+      ),
+      loading: () => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
   }
 }

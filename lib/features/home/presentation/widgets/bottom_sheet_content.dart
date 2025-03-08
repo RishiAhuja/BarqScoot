@@ -87,7 +87,7 @@ class BottomSheetContent extends ConsumerWidget {
                             rides.where((r) => r.status == 'completed');
                         final totalCost = completedRides.fold<double>(
                           0,
-                          (sum, ride) => sum + (ride.totalPrice),
+                          (sum, ride) => sum + (ride.totalPrice ?? 0),
                         );
                         return '﷼${totalCost.toStringAsFixed(2)}';
                       },
@@ -196,7 +196,7 @@ class BottomSheetContent extends ConsumerWidget {
                   error: (_, __) => const Text('Unable to get location'),
                 );
               },
-              loading: () => const CircularProgressIndicator(),
+              loading: () => Center(child: const CircularProgressIndicator()),
               error: (_, __) => const Text('Error loading scooters'),
             ),
           ],
@@ -245,26 +245,39 @@ class _StatItem extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.27, // Set fixed width
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
               color: isDark ? Colors.white : Colors.black,
+              size: 24, // Specify icon size
             ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
+            const SizedBox(height: 4),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontWeight: FontWeight.w500,
+                    ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
+            const SizedBox(height: 2),
             Text(
               title,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: isDark ? Colors.white70 : Colors.black54,
                   ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
           ],
         ),

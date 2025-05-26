@@ -1,7 +1,5 @@
 # BarqScoot - E-Scooter Rental/Provider App (similar to Uber)
 
-![BarqScoot Logo](assets/icon/logo.png)
-
 <p align="center">
   <img src="assets/icon/logo.png" alt="BarqScoot Logo" width="200"/>
 </p>

@@ -81,21 +81,55 @@ class AppRouter {
           GoRoute(
             path: 'otp',
             builder: (context, state) {
-              final params = state.extra as Map<String, String>;
-              return OtpVerificationScreen(
-                phoneNumber: params['phoneNumber']!,
-                verificationId:
-                    params['verificationId']!, // Add this required parameter
-              );
+              final params = state.extra;
+              AppLogger.log(
+                  'OTP Route Params: ${params?.runtimeType}, value: $params');
+
+              // Add null check
+              if (params == null) {
+                // Handle the case when no params are provided
+                return const Scaffold(
+                  body: Center(
+                    child: Text('Missing verification parameters'),
+                  ),
+                );
+              }
+
+              // Then cast and continue...
+              try {
+                final paramsMap = params as Map<String, dynamic>;
+                final phoneNumber = paramsMap['phoneNumber']?.toString() ?? '';
+                final verificationId = paramsMap['verificationId']?.toString();
+
+                if (phoneNumber.isEmpty) {
+                  return const Scaffold(
+                    body: Center(
+                      child: Text('Invalid verification parameters'),
+                    ),
+                  );
+                }
+
+                return OtpVerificationScreen(
+                  phoneNumber: phoneNumber,
+                  verificationId: verificationId!,
+                );
+              } catch (e) {
+                AppLogger.error('Error parsing OTP route parameters: $e');
+                return Scaffold(
+                  body: Center(
+                    child: Text('Error: $e'),
+                  ),
+                );
+              }
             },
           ),
           GoRoute(
             path: 'login-otp',
             builder: (context, state) {
-              final params = state.extra as Map<String, String>;
+              final params = state.extra as Map<String, dynamic>;
               return LoginOtpVerificationScreen(
-                phoneNumber: params['phoneNumber']!,
-                verificationId: params['verificationId']!,
+                phoneNumber: params['phoneNumber'].toString(),
+                verificationId: params['verificationId'].toString(),
               );
             },
           ),

@@ -46,15 +46,20 @@ class AuthApiService {
 
   Future<Either<ApiException, Map<String, dynamic>>> verifyOtp({
     required String phoneNumber,
+    required String verificationId, // Added parameter
     required String otp,
   }) async {
     try {
       final response = await _client.post(
         Uri.parse(AuthApiEndpoints.verifyOtpUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization':
+              'Bearer $verificationId', // Use verification ID as bearer token
+        },
         body: jsonEncode({
           'phoneNumber': phoneNumber,
-          'otp': otp,
+          'code': otp, // Note: API expects 'code' not 'otp'
         }),
       );
 
@@ -69,7 +74,7 @@ class AuthApiService {
 
       return Left(ApiException.fromResponse(response));
     } catch (e) {
-      AppLogger.error('Error verifying OTP: $e');
+      AppLogger.error('Error verifying OTP:', error: e);
       return Left(ApiException.fromError(e));
     }
   }
@@ -149,6 +154,31 @@ class AuthApiService {
     } catch (e) {
       AppLogger.error('Error getting profile', error: e);
       throw ApiException('Failed to get user profile: $e');
+    }
+  }
+
+  Future<Either<ApiException, Map<String, dynamic>>> loginWithPhone(
+      String phoneNumber) async {
+    try {
+      AppLogger.log('Initiating login with phone number: $phoneNumber');
+
+      final response = await _client.post(
+        Uri.parse('${BaseApi.baseUrl}/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phoneNumber': phoneNumber}),
+      );
+
+      AppLogger.log('Login Response Status: ${response.statusCode}');
+      AppLogger.log('Login Response Body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return Right(jsonDecode(response.body));
+      }
+
+      return Left(ApiException.fromResponse(response));
+    } catch (e) {
+      AppLogger.error('Error in login with phone:', error: e);
+      return Left(ApiException('Failed to login: $e'));
     }
   }
 }

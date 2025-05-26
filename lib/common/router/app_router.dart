@@ -3,6 +3,7 @@ import 'package:escooter/core/di/service_locator/service_locator.dart';
 import 'package:escooter/features/auth/presentation/providers/auth_shell_check.dart';
 // import 'package:escooter/main.dart';
 import 'package:escooter/features/auth/presentation/screens/auth_screen.dart';
+import 'package:escooter/features/auth/presentation/screens/login_otp_verification_screen.dart';
 import 'package:escooter/features/auth/presentation/screens/otp_verification_screen.dart';
 import 'package:escooter/features/home/presentation/screens/home_screen.dart';
 // import 'package:escooter/presentation/auth/signup.dart';
@@ -80,9 +81,21 @@ class AppRouter {
           GoRoute(
             path: 'otp',
             builder: (context, state) {
-              final phoneNumber = state.extra as Map<String, String>;
+              final params = state.extra as Map<String, String>;
               return OtpVerificationScreen(
-                phoneNumber: phoneNumber['phoneNumber']!,
+                phoneNumber: params['phoneNumber']!,
+                verificationId:
+                    params['verificationId']!, // Add this required parameter
+              );
+            },
+          ),
+          GoRoute(
+            path: 'login-otp',
+            builder: (context, state) {
+              final params = state.extra as Map<String, String>;
+              return LoginOtpVerificationScreen(
+                phoneNumber: params['phoneNumber']!,
+                verificationId: params['verificationId']!,
               );
             },
           ),

@@ -54,11 +54,13 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<AuthException, VerifyOtpResponse>> verifyOtp(
     String phoneNumber,
+    String verificationId, // Add this parameter
     String otp,
   ) async {
     try {
       final result = await _authApiService.verifyOtp(
         phoneNumber: phoneNumber,
+        verificationId: verificationId, // Pass it here
         otp: otp,
       );
 
@@ -165,6 +167,69 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(e.message);
     } catch (e) {
       return Left('Failed to get user profile: $e');
+    }
+  }
+
+  @override
+  Future<Either<String, OtpResponse>> loginWithPhone(String phoneNumber) async {
+    try {
+      final result = await _authApiService.loginWithPhone(phoneNumber);
+
+      return result.fold(
+        (apiException) =>
+            Left(apiException.message), // Convert ApiException to String
+        (json) {
+          try {
+            final otpResponse = OtpResponse.fromJson(json);
+            return Right(otpResponse);
+          } catch (e) {
+            return Left('Invalid response format: $e');
+          }
+        },
+      );
+    } catch (e) {
+      return Left('Failed to send OTP: $e');
+    }
+  }
+
+  @override
+  Future<Either<String, LoginResponse>> verifyLoginOtp({
+    required String phoneNumber,
+    required String verificationId,
+    required String otp,
+  }) async {
+    try {
+      final result = await _authApiService.verifyOtp(
+        phoneNumber: phoneNumber,
+        verificationId: verificationId,
+        otp: otp,
+      );
+
+      return result.fold(
+        (error) => Left(error.message),
+        (data) {
+          try {
+            if (data['status'] == 'success' && data['data'] != null) {
+              // Extract token from response
+              final token = data['data']['token'];
+              if (token == null) return Left('No token received');
+
+              return Right(LoginResponse(
+                token: token,
+                refreshToken: data['data']['refreshToken'],
+                isNewUser: data['data']['isNewUser'] ?? false,
+              ));
+            }
+            return Left('Invalid response format');
+          } catch (e) {
+            AppLogger.error('Error parsing OTP verification response: $e');
+            return Left('Invalid response format');
+          }
+        },
+      );
+    } catch (e) {
+      AppLogger.error('Repository error in OTP verification: $e');
+      return Left('Unexpected error during verification');
     }
   }
 }

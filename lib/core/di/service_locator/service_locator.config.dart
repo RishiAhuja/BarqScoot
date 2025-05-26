@@ -17,10 +17,14 @@ import '../../../features/auth/data/repository/auth_repository_impl.dart'
 import '../../../features/auth/data/sources/auth_service.dart' as _i780;
 import '../../../features/auth/domain/repository/auth_repository.dart' as _i754;
 import '../../../features/auth/domain/usecases/login_usecase.dart' as _i849;
+import '../../../features/auth/domain/usecases/login_with_phone_usecase.dart'
+    as _i499;
 import '../../../features/auth/domain/usecases/register_user_usecase.dart'
     as _i635;
 import '../../../features/auth/domain/usecases/save_user_usecase.dart' as _i388;
 import '../../../features/auth/domain/usecases/sent_otp_usecase.dart' as _i591;
+import '../../../features/auth/domain/usecases/verify_login_otp_usecase.dart'
+    as _i342;
 import '../../../features/auth/domain/usecases/verify_otp_usecase.dart'
     as _i553;
 import '../../../features/auth/presentation/providers/auth_providers.dart'
@@ -114,9 +118,13 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i591.SendOtpUseCase(gh<_i754.AuthRepository>()));
     gh.factory<_i635.RegisterUserUsecase>(
         () => _i635.RegisterUserUsecase(gh<_i754.AuthRepository>()));
+    gh.factory<_i849.LoginUseCase>(
+        () => _i849.LoginUseCase(gh<_i754.AuthRepository>()));
     gh.factory<_i388.SaveUserUseCase>(
         () => _i388.SaveUserUseCase(gh<_i754.AuthRepository>()));
-    gh.factory<_i849.LoginUseCase>(() => _i849.LoginUseCase(
+    gh.factory<_i499.LoginWithPhoneUseCase>(
+        () => _i499.LoginWithPhoneUseCase(gh<_i754.AuthRepository>()));
+    gh.factory<_i342.VerifyLoginOtpUseCase>(() => _i342.VerifyLoginOtpUseCase(
           gh<_i754.AuthRepository>(),
           gh<_i318.StorageService>(),
         ));
@@ -125,7 +133,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i635.RegisterUserUsecase>(),
           gh<_i553.VerifyOtpUsecase>(),
           gh<_i388.SaveUserUseCase>(),
-          gh<_i849.LoginUseCase>(),
+          gh<_i499.LoginWithPhoneUseCase>(),
+          gh<_i342.VerifyLoginOtpUseCase>(),
         ));
     return this;
   }

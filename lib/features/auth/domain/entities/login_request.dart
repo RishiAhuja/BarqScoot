@@ -1,14 +1,11 @@
 class LoginRequest {
-  final String email;
-  final String password;
+  final String phoneNumber;
 
-  LoginRequest({
-    required this.email,
-    required this.password,
-  });
+  LoginRequest({required this.phoneNumber});
 
-  Map<String, dynamic> toJson() => {
-        'email': email,
-        'password': password,
-      };
+  Map<String, dynamic> toJson() {
+    return {
+      'phoneNumber': phoneNumber,
+    };
+  }
 }

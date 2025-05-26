@@ -1,29 +1,29 @@
 import 'package:escooter/core/configs/constants/app_localization_constants.dart';
 import 'package:escooter/core/configs/theme/app_colors.dart';
 import 'package:escooter/features/auth/presentation/providers/auth_providers.dart';
-import 'package:escooter/features/auth/presentation/providers/user_registeration_state.dart';
 import 'package:escooter/l10n/app_localizations.dart';
 import 'package:escooter/utils/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pinput/pinput.dart';
 
-class OtpVerificationScreen extends ConsumerStatefulWidget {
+class LoginOtpVerificationScreen extends ConsumerStatefulWidget {
   final String phoneNumber;
-  final String verificationId; // Add verification ID parameter
+  final String verificationId;
 
-  const OtpVerificationScreen({
+  const LoginOtpVerificationScreen({
     super.key,
     required this.phoneNumber,
-    required this.verificationId, // Make it required
+    required this.verificationId,
   });
 
   @override
-  ConsumerState<OtpVerificationScreen> createState() =>
-      _OtpVerificationScreenState();
+  ConsumerState<LoginOtpVerificationScreen> createState() =>
+      _LoginOtpVerificationScreenState();
 }
 
-class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
+class _LoginOtpVerificationScreenState
+    extends ConsumerState<LoginOtpVerificationScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -83,19 +83,11 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
     final otp = _otpController.text;
     if (otp.length != 6) return;
 
-    AppLogger.log('otp: $otp');
-    final registrationData = ref.read(userRegistrationProvider);
-    if (registrationData == null) {
-      AppLogger.error('Registration data is null');
-      return;
-    }
+    AppLogger.log('Login verification OTP: $otp');
 
-    ref.read(authControllerProvider.notifier).verifyOTP(
-          phoneNumber: widget.phoneNumber,
-          verificationId: widget.verificationId, // Pass verification ID
+    ref.read(authControllerProvider.notifier).verifyLoginOTP(
           otp: otp,
           context: context,
-          registrationData: registrationData,
         );
   }
 
@@ -207,13 +199,6 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
                           color: Colors.grey[50],
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.grey[300]!),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
                         ),
                         textStyle: const TextStyle(
                           fontSize: 24,
@@ -230,19 +215,9 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
                             color: Theme.of(context).primaryColor,
                             width: 2,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Theme.of(context)
-                                  .primaryColor
-                                  .withOpacity(0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
                         ),
                       ),
                       onCompleted: (_) => _handleVerifyOtp(),
-                      // separator: const SizedBox(width: 12),
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -277,18 +252,16 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
                             onPressed: () {
                               setState(() => _remainingTime = 30);
                               _startTimer();
-                              // Implement resend logic
+                              // Implement resend logic here
                             },
                             icon: const Icon(Icons.refresh_rounded),
                             label: Text(
                               translations.translate(
                                   AppLocalizationConstants.resendOtp),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.primaryTeal),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryTeal,
+                              ),
                             ),
                           ),
                   ),
@@ -329,10 +302,9 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen>
                                   AppLocalizationConstants.verifyOtp),
                               style: Theme.of(context)
                                   .textTheme
-                                  .displaySmall
+                                  .titleMedium
                                   ?.copyWith(
                                     color: Colors.white,
-                                    fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                   ),
                             ),

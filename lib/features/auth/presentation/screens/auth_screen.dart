@@ -73,29 +73,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   Widget _buildLoginForm() {
     return Column(
       children: [
-        _buildTextField(
-          controller: _loginEmailController,
-          labelText: 'Email',
-          prefixIcon: Icons.email_outlined,
-          keyboardType: TextInputType.emailAddress,
-          validator: (value) {
-            if (value?.isEmpty ?? true) return 'Please enter your email';
-            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
-              return 'Please enter a valid email';
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 20),
-        _buildTextField(
-          controller: _loginPasswordController,
-          labelText: 'Password',
-          prefixIcon: Icons.lock_outline,
-          obscure: true,
-          validator: (value) {
-            if (value?.isEmpty ?? true) return 'Please enter your password';
-            return null;
-          },
+        _phoneNumberTextField(), // Use the same phone input as registration
+        const SizedBox(height: 16),
+        Text(
+          'We will send a verification code to this number',
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 14,
+          ),
         ),
       ],
     );
@@ -349,10 +334,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     final authMode = ref.read(authModeProvider);
 
     if (authMode == AuthMode.login) {
-      // Handle login
+      // Updated to use phone-based login
       await ref.read(authControllerProvider.notifier).login(
-            email: _loginEmailController.text,
-            password: _loginPasswordController.text,
+            phoneNumber: _phoneNumber,
             context: context,
           );
     } else {

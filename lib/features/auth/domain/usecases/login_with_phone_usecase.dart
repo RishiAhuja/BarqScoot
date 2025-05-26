@@ -6,11 +6,11 @@ import 'package:escooter/features/auth/domain/repository/auth_repository.dart';
 import 'package:injectable/injectable.dart';
 
 @injectable
-class LoginUseCase
+class LoginWithPhoneUseCase
     implements Usecase<Either<String, OtpResponse>, LoginRequest> {
   final AuthRepository _repository;
 
-  LoginUseCase(this._repository);
+  LoginWithPhoneUseCase(this._repository);
 
   @override
   Future<Either<String, OtpResponse>> call({LoginRequest? params}) async {
@@ -19,13 +19,7 @@ class LoginUseCase
     }
 
     try {
-      // Send OTP to the phone number instead of credential-based login
-      final result = await _repository.sendOtp(params.phoneNumber);
-
-      return result.fold(
-        (failure) => Left(failure.message),
-        (otpResponse) => Right(otpResponse),
-      );
+      return await _repository.loginWithPhone(params.phoneNumber);
     } catch (e) {
       return Left('Failed to initiate login: $e');
     }

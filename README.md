@@ -284,4 +284,3 @@ Unauthorized use, reproduction, or distribution of this source code, or any port
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
 
-Similar code found with 1 license type
